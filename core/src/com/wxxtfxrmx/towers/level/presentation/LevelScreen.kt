@@ -4,10 +4,7 @@ import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.ashley.core.PooledEngine
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
-import com.wxxtfxrmx.towers.common.BaseScreen
-import com.wxxtfxrmx.towers.common.UiConstants
-import com.wxxtfxrmx.towers.common.addComponents
-import com.wxxtfxrmx.towers.common.component
+import com.wxxtfxrmx.towers.common.*
 import com.wxxtfxrmx.towers.common.shader.ShapeRendererFactory
 import com.wxxtfxrmx.towers.level.component.BoundsComponent
 import com.wxxtfxrmx.towers.level.component.OrderComponent
@@ -38,31 +35,30 @@ class LevelScreen(
         logicSystems.forEach(engine::addSystem)
         renderingSystems.forEach(engine::addSystem)
 
-        //FIXME: Shaders stuff
         val entity = engine.createEntity()
 
-        val shaderComponent: ShaderComponent = engine.component()
+        val shaderComponent: ShaderComponent = engine.component {
+            shader = shader(
+                    vertexSource = "shaders/background/vertex.glsl",
+                    fragmentSource = "shaders/background/fragment.glsl",
+            )
 
-        val uniforms = listOf(
-                Uniform2f("u_resolution", UiConstants.WIDTH, UiConstants.HEIGHT),
-                Uniform3f("u_bottom_color", 0.45f, 0.44f, 0.36f),
-                Uniform3f("u_top_color", 0.34f, 0.59f, 1.0f),
-        )
+            uniforms = listOf(
+                    Uniform2f("u_resolution", UiConstants.WIDTH, UiConstants.HEIGHT),
+                    Uniform3f("u_bottom_color", 0.45f, 0.44f, 0.36f),
+                    Uniform3f("u_top_color", 0.34f, 0.59f, 1.0f),
+            )
+        }
 
-        shaderComponent.uniforms = uniforms
+        val boundsComponent: BoundsComponent = engine.component {
+            bounds.set(0f, 0f, UiConstants.WIDTH, UiConstants.HEIGHT)
+        }
 
-        val boundsComponent: BoundsComponent = engine.component()
-        boundsComponent.bounds.set(0f, 0f, UiConstants.WIDTH, UiConstants.HEIGHT)
+        val orderComponent: OrderComponent = engine.component {
+            order = Int.MAX_VALUE
+        }
 
-        val orderComponent: OrderComponent = engine.component()
-        orderComponent.order = Int.MAX_VALUE
-
-        val vertexShader = Gdx.files.internal("shaders/background/vertex.glsl").readString()
-        val fragmentShader = Gdx.files.internal("shaders/background/fragment.glsl").readString()
-        val shader = ShaderProgram(vertexShader, fragmentShader)
-        shaderComponent.shader = shader
-
-        entity.addComponents(shaderComponent, boundsComponent)
+        entity.addComponents(shaderComponent, boundsComponent, orderComponent)
 
         engine.addEntity(entity)
     }
