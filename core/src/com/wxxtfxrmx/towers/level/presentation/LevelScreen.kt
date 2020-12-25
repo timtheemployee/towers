@@ -12,7 +12,9 @@ import com.wxxtfxrmx.towers.common.shader.ShapeRendererFactory
 import com.wxxtfxrmx.towers.level.component.BoundsComponent
 import com.wxxtfxrmx.towers.level.component.OrderComponent
 import com.wxxtfxrmx.towers.level.component.ShaderComponent
-import com.wxxtfxrmx.towers.level.system.RenderingSystem
+import com.wxxtfxrmx.towers.level.model.*
+import com.wxxtfxrmx.towers.level.system.AccumulateElapsedTimeSystem
+import com.wxxtfxrmx.towers.level.system.rendering.RenderingSystem
 
 class LevelScreen(
         shapeRendererFactory: ShapeRendererFactory,
@@ -24,6 +26,10 @@ class LevelScreen(
     private val renderingSystems = mutableListOf<EntitySystem>()
 
     init {
+        logicSystems.add(
+                AccumulateElapsedTimeSystem()
+        )
+
         renderingSystems.add(
                 RenderingSystem(batch, shapeRendererFactory)
         )
@@ -36,6 +42,14 @@ class LevelScreen(
         val entity = engine.createEntity()
 
         val shaderComponent: ShaderComponent = engine.component()
+
+        val uniforms = listOf(
+                Uniform2f("u_resolution", UiConstants.WIDTH, UiConstants.HEIGHT),
+                Uniform3f("u_bottom_color", 0.45f, 0.44f, 0.36f),
+                Uniform3f("u_top_color", 0.34f, 0.59f, 1.0f),
+        )
+
+        shaderComponent.uniforms = uniforms
 
         val boundsComponent: BoundsComponent = engine.component()
         boundsComponent.bounds.set(0f, 0f, UiConstants.WIDTH, UiConstants.HEIGHT)
