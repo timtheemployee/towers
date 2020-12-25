@@ -3,15 +3,18 @@ package com.wxxtfxrmx.towers
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.wxxtfxrmx.towers.common.shader.ShapeRendererFactory
 import com.wxxtfxrmx.towers.level.presentation.LevelScreen
 
 class Towers : Game() {
 
     private val shapeFactory = ShapeRendererFactory()
+    private lateinit var textureAtlas: TextureAtlas
 
     override fun create() {
-        screen = LevelScreen(shapeFactory)
+        textureAtlas = TextureAtlas(Gdx.files.internal("atlas/towers.atlas"))
+        screen = LevelScreen(textureAtlas, shapeFactory)
     }
 
     override fun render() {
