@@ -18,6 +18,10 @@ fun Entity.addComponents(vararg components: Component) {
     components.forEach(::add)
 }
 
+fun PooledEngine.addEntities(entities: List<Entity>) {
+    entities.forEach(::addEntity)
+}
+
 inline fun <reified T: Component> PooledEngine.component() : T =
         createComponent(T::class.java)
 
