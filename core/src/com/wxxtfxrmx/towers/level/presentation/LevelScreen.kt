@@ -6,11 +6,13 @@ import com.badlogic.ashley.core.PooledEngine
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.wxxtfxrmx.towers.common.*
 import com.wxxtfxrmx.towers.common.shader.ShapeRendererFactory
+import com.wxxtfxrmx.towers.common.shader.shader
 import com.wxxtfxrmx.towers.level.component.BoundsComponent
 import com.wxxtfxrmx.towers.level.component.OrderComponent
 import com.wxxtfxrmx.towers.level.component.ShaderComponent
 import com.wxxtfxrmx.towers.level.component.TextureComponent
-import com.wxxtfxrmx.towers.level.model.*
+import com.wxxtfxrmx.towers.level.model.GroundTexture
+import com.wxxtfxrmx.towers.level.model.Uniform3f
 import com.wxxtfxrmx.towers.level.system.AccumulateElapsedTimeSystem
 import com.wxxtfxrmx.towers.level.system.rendering.RenderingSystem
 import kotlin.random.Random
@@ -60,11 +62,10 @@ class LevelScreen(
     }
 
 
-
-    private fun foundationEntities() : List<Entity> {
+    private fun foundationEntities(): List<Entity> {
         val complexGrounds = GroundTexture.values().toMutableList()
                 .apply { remove(GroundTexture.SLICE_5) }
-        
+
         val entities = mutableListOf<Entity>()
 
         for (x in 0 until UiConstants.WIDTH.toInt() step UiConstants.UNIT) {
@@ -99,7 +100,7 @@ class LevelScreen(
         return entities
     }
 
-    private fun backgroundEntity() : Entity {
+    private fun backgroundEntity(): Entity {
         val entity = engine.createEntity()
 
         val shaderComponent: ShaderComponent = engine.component {
