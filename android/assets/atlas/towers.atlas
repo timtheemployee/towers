@@ -1,41 +1,27 @@
 
 towers.png
-size: 512,128
+size: 128,256
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-ground-slice-1
+alert
   rotate: false
-  xy: 271, 2
-  size: 65, 64
-  orig: 65, 64
+  xy: 36, 66
+  size: 64, 64
+  orig: 64, 64
   offset: 0, 0
   index: -1
-ground-slice-2
-  rotate: false
-  xy: 137, 2
-  size: 65, 64
-  orig: 65, 64
-  offset: 0, 0
-  index: -1
-ground-slice-3
-  rotate: false
-  xy: 70, 2
-  size: 65, 64
-  orig: 65, 64
-  offset: 0, 0
-  index: -1
-ground-slice-4
-  rotate: false
-  xy: 204, 2
-  size: 65, 64
-  orig: 65, 64
-  offset: 0, 0
-  index: -1
-ground-slice-5
+fence
   rotate: false
   xy: 2, 2
-  size: 66, 64
-  orig: 66, 64
+  size: 32, 128
+  orig: 32, 128
+  offset: 0, 0
+  index: -1
+keep-out
+  rotate: false
+  xy: 2, 132
+  size: 118, 64
+  orig: 118, 64
   offset: 0, 0
   index: -1

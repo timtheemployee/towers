@@ -7,15 +7,10 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.wxxtfxrmx.towers.common.*
 import com.wxxtfxrmx.towers.common.shader.ShapeRendererFactory
 import com.wxxtfxrmx.towers.common.shader.shader
-import com.wxxtfxrmx.towers.level.component.BoundsComponent
-import com.wxxtfxrmx.towers.level.component.OrderComponent
-import com.wxxtfxrmx.towers.level.component.ShaderComponent
-import com.wxxtfxrmx.towers.level.component.TextureComponent
-import com.wxxtfxrmx.towers.level.model.GroundTexture
+import com.wxxtfxrmx.towers.level.component.*
+import com.wxxtfxrmx.towers.level.model.TowersTexture
 import com.wxxtfxrmx.towers.level.model.Uniform3f
-import com.wxxtfxrmx.towers.level.system.AccumulateElapsedTimeSystem
 import com.wxxtfxrmx.towers.level.system.rendering.RenderingSystem
-import kotlin.random.Random
 
 class LevelScreen(
         private val textureAtlas: TextureAtlas,
@@ -26,14 +21,9 @@ class LevelScreen(
     private val inputSystems = mutableListOf<EntitySystem>()
     private val logicSystems = mutableListOf<EntitySystem>()
     private val renderingSystems = mutableListOf<EntitySystem>()
-    private val random = Random(888L)
 
 
     init {
-        logicSystems.add(
-                AccumulateElapsedTimeSystem()
-        )
-
         renderingSystems.add(
                 RenderingSystem(batch, shapeRendererFactory)
         )
@@ -43,7 +33,9 @@ class LevelScreen(
         renderingSystems.forEach(engine::addSystem)
 
         engine.addEntity(backgroundEntity())
-        engine.addEntities(foundationEntities())
+        engine.addEntities(fenceEntities())
+        engine.addEntity(keepOutSignEntity())
+        engine.addEntity(alertSignsEntity())
     }
 
     override fun render(delta: Float) {
@@ -62,42 +54,79 @@ class LevelScreen(
     }
 
 
-    private fun foundationEntities(): List<Entity> {
-        val complexGrounds = GroundTexture.values().toMutableList()
-                .apply { remove(GroundTexture.SLICE_5) }
-
+    private fun fenceEntities(): List<Entity> {
+        val fenceTexture = textureAtlas.region(TowersTexture.FENCE)
         val entities = mutableListOf<Entity>()
 
-        for (x in 0 until UiConstants.WIDTH.toInt() step UiConstants.UNIT) {
-            for (y in 0 until UiConstants.HALF_HEIGHT.toInt() step UiConstants.UNIT) {
-                val entity = engine.createEntity()
+        val textureComponent: TextureComponent = engine.component {
+            this.texture = fenceTexture
+        }
 
-                val groundTexture = if (random.nextBoolean()) {
-                    GroundTexture.SLICE_5
-                } else {
-                    complexGrounds.random()
-                }
+        val orderComponent: OrderComponent = engine.component {
+            order = Int.MAX_VALUE - 1
+        }
 
-                val texture = textureAtlas.region(groundTexture.textureName)
+        for (x in 0 until UiConstants.WIDTH.toInt() step UiConstants.HALF_UNIT) {
+            val entity = engine.createEntity()
 
-                val textureComponent: TextureComponent = engine.component {
-                    this.texture = texture
-                }
-
-                val orderComponent: OrderComponent = engine.component {
-                    order = Int.MAX_VALUE - 1
-                }
-
-                val boundsComponent: BoundsComponent = engine.component {
-                    bounds.set(x.toFloat(), y.toFloat(), texture.regionWidth.toFloat(), texture.regionHeight.toFloat())
-                }
-
-                entity.addComponents(textureComponent, orderComponent, boundsComponent)
-                entities.add(entity)
+            val boundsComponent: BoundsComponent = engine.component {
+                bounds.set(x.toFloat(), 0f, fenceTexture.regionWidth.toFloat(), fenceTexture.regionHeight.toFloat())
             }
+
+            entity.addComponents(textureComponent, orderComponent, boundsComponent)
+            entities.add(entity)
         }
 
         return entities
+    }
+
+    private fun keepOutSignEntity(): Entity {
+        val keepOutSignEntity = engine.createEntity()
+        val signTexture = textureAtlas.region(TowersTexture.KEEP_OUT_SIGN)
+
+        val textureComponent: TextureComponent = engine.component {
+            texture = signTexture
+        }
+
+        val orderComponent: OrderComponent = engine.component {
+            order = Int.MAX_VALUE - 2
+        }
+
+        val boundsComponent: BoundsComponent = engine.component {
+            bounds.set(UiConstants.HALF_WIDTH + UiConstants.UNIT, UiConstants.HALF_UNIT.toFloat(),
+                    signTexture.regionWidth.toFloat(), signTexture.regionHeight.toFloat())
+        }
+
+        keepOutSignEntity.addComponents(textureComponent, orderComponent, boundsComponent)
+
+        return keepOutSignEntity
+    }
+
+    private fun alertSignsEntity(): Entity {
+        val alertTexture = textureAtlas.region(TowersTexture.ALERT_SIGN)
+
+        val entity = engine.createEntity()
+
+        val textureComponent: TextureComponent = engine.component {
+            texture = alertTexture
+        }
+
+        val orderComponent: OrderComponent = engine.component {
+            order = Int.MAX_VALUE - 2
+        }
+
+        val scaleComponent: ScaleComponent = engine.component {
+            scale.set(0.7f, 0.7f)
+        }
+
+        val boundsComponent: BoundsComponent = engine.component {
+            bounds.set(UiConstants.HALF_UNIT.toFloat(), UiConstants.HALF_UNIT.toFloat(),
+                    alertTexture.regionWidth.toFloat(), alertTexture.regionHeight.toFloat())
+        }
+
+        entity.addComponents(textureComponent, orderComponent, scaleComponent, boundsComponent)
+
+        return entity
     }
 
     private fun backgroundEntity(): Entity {
@@ -109,8 +138,10 @@ class LevelScreen(
                     fragmentSource = "shaders/background/fragment.glsl",
             )
 
+            val background = UiColors.BLACK.toOpenGl()
+
             uniforms = listOf(
-                    Uniform3f("u_color", 0.80f, 0.72f, 0.58f),
+                    Uniform3f("u_color", background.first, background.second, background.third),
             )
         }
 
