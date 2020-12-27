@@ -36,6 +36,7 @@ class LevelScreen(
         engine.addEntities(fenceEntities())
         engine.addEntity(keepOutSignEntity())
         engine.addEntity(alertSignsEntity())
+        engine.addEntities(groundEntities())
     }
 
     override fun render(delta: Float) {
@@ -70,7 +71,8 @@ class LevelScreen(
             val entity = engine.createEntity()
 
             val boundsComponent: BoundsComponent = engine.component {
-                bounds.set(x.toFloat(), 0f, fenceTexture.regionWidth.toFloat(), fenceTexture.regionHeight.toFloat())
+                //16f - ground height
+                bounds.set(x.toFloat(), 16f, fenceTexture.regionWidth.toFloat(), fenceTexture.regionHeight.toFloat())
             }
 
             entity.addComponents(textureComponent, orderComponent, boundsComponent)
@@ -127,6 +129,31 @@ class LevelScreen(
         entity.addComponents(textureComponent, orderComponent, scaleComponent, boundsComponent)
 
         return entity
+    }
+
+    private fun groundEntities(): List<Entity> {
+        val groundTexture = textureAtlas.region(TowersTexture.GROUND)
+        val entities = mutableListOf<Entity>()
+        val textureComponent: TextureComponent = engine.component {
+            texture = groundTexture
+        }
+
+        val orderComponent: OrderComponent = engine.component {
+            order = Int.MAX_VALUE - 2
+        }
+
+        for (x in 0..UiConstants.WIDTH.toInt() step 16) {
+            val entity = engine.createEntity()
+
+            val boundsComponent: BoundsComponent = engine.component {
+                bounds.set(x.toFloat(), 0f, groundTexture.regionWidth.toFloat(), groundTexture.regionHeight.toFloat())
+            }
+
+            entity.addComponents(textureComponent, orderComponent, boundsComponent)
+            entities.add(entity)
+        }
+
+        return entities
     }
 
     private fun backgroundEntity(): Entity {
