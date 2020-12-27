@@ -9,6 +9,7 @@ import com.wxxtfxrmx.towers.common.shader.ShapeRendererFactory
 import com.wxxtfxrmx.towers.common.shader.shader
 import com.wxxtfxrmx.towers.level.component.*
 import com.wxxtfxrmx.towers.level.model.TowersTexture
+import com.wxxtfxrmx.towers.level.model.Uniform2f
 import com.wxxtfxrmx.towers.level.model.Uniform3f
 import com.wxxtfxrmx.towers.level.system.rendering.RenderingSystem
 
@@ -162,13 +163,13 @@ class LevelScreen(
         val shaderComponent: ShaderComponent = engine.component {
             shader = shader(
                     vertexSource = "shaders/background/vertex.glsl",
-                    fragmentSource = "shaders/background/fragment.glsl",
+                    fragmentSource = "shaders/background/towers_background.glsl",
             )
 
             val background = UiColors.BLACK.toOpenGl()
 
             uniforms = listOf(
-                    Uniform3f("u_color", background.first, background.second, background.third),
+                    Uniform2f("u_resolution", UiConstants.WIDTH, UiConstants.HEIGHT),
             )
         }
 
