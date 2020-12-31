@@ -3,6 +3,7 @@ precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
+uniform vec2 u_background_color
 
 //TODO need move it to upside
 //TODO make another buildings overlapping this one

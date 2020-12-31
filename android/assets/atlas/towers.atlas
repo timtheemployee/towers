@@ -6,29 +6,29 @@ filter: Nearest,Nearest
 repeat: none
 alert
   rotate: false
-  xy: 36, 84
+  xy: 36, 66
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 fence
   rotate: false
-  xy: 2, 20
+  xy: 2, 2
   size: 32, 128
   orig: 32, 128
   offset: 0, 0
   index: -1
 ground
   rotate: false
-  xy: 2, 2
+  xy: 104, 180
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 keep-out
   rotate: false
-  xy: 2, 150
-  size: 118, 64
-  orig: 118, 64
+  xy: 2, 132
+  size: 100, 64
+  orig: 100, 64
   offset: 0, 0
   index: -1

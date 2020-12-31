@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 
 private data class RendererKey(val shader: ShaderProgram)
 
-class ShapeRendererFactory {
+class ShapeRendererFactory(private val defaultRenderer: ShapeRenderer) {
 
     private val rendererCache = mutableMapOf<RendererKey, ShapeRenderer>()
 
@@ -15,4 +15,7 @@ class ShapeRendererFactory {
         return rendererCache[rendererKey] ?: ShapeRenderer(5000, shader)
                 .apply { rendererCache[rendererKey] = this }
     }
+
+    fun getDefault(): ShapeRenderer =
+            defaultRenderer
 }
