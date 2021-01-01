@@ -1,9 +1,6 @@
 package com.wxxtfxrmx.towers.common
 
-import com.badlogic.ashley.core.Component
-import com.badlogic.ashley.core.ComponentMapper
-import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.core.PooledEngine
+import com.badlogic.ashley.core.*
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import kotlin.reflect.KClass
