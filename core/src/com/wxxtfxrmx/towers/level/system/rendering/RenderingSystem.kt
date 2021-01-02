@@ -58,8 +58,6 @@ class RenderingSystem(
     private fun render(batch: SpriteBatch, body: Body, texture: TextureRegion) {
         val (width, height) = bodyBoundsCalculator.getBounds(body)
 
-        Gdx.app.log("TAG", "body position is ${body.position.x}, ${body.position.y}")
-
         batch.apply {
             begin()
             draw(texture,

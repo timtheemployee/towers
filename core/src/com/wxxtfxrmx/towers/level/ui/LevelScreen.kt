@@ -26,7 +26,7 @@ class LevelScreen(
         shapeRendererFactory: ShapeRendererFactory,
 ) : BaseScreen() {
 
-    private val world = World(Vector2(0f, -20.0f), true)
+    private val world = World(Vector2(0f, -100.0f), true)
     private val engine = PooledEngine()
     private val renderingSystem = RenderingSystem(batch)
     private val box2DDebugRenderer = Box2DDebugRenderer(true, true, true, true, true, true)
@@ -75,7 +75,7 @@ class LevelScreen(
             setAsBox(fenceTexture.regionWidth.toFloat(), fenceTexture.regionHeight.toFloat())
         }
 
-        for (i in 0..UiConstants.WIDTH.toInt() step fenceTexture.regionWidth) {
+        for (i in 0..UiConstants.WIDTH.toInt() step 4 * fenceTexture.regionWidth) {
             val entity = engine.createEntity()
 
             val body = BodyDef().apply {
@@ -202,7 +202,7 @@ class LevelScreen(
     private fun shapeEntity(): Entity {
         val entity = engine.createEntity()
 
-        val shape = textureAtlas.region(TowersTexture.ALERT_SIGN)
+        val shape = textureAtlas.region(TowersTexture.FLOOR_V1)
 
         val textureComponent: TextureComponent = engine.component {
             texture = shape
@@ -212,16 +212,17 @@ class LevelScreen(
             type = BodyDef.BodyType.DynamicBody
             position.set(UiConstants.HALF_WIDTH, UiConstants.HEIGHT)
             active = true
+            gravityScale = 2f
         }.let(world::createBody)
 
         val polygon = PolygonShape().apply {
-            setAsBox(shape.regionWidth.toFloat(), shape.regionHeight.toFloat(), Vector2(0.5f, 0.5f), 0f)
+            setAsBox(shape.regionWidth.toFloat(), shape.regionHeight.toFloat())
         }
 
-        body.createFixture(polygon, 1f)
+        body.createFixture(polygon, 0f)
 
         val mass = MassData().apply {
-            mass = 25f
+            mass = 100f
         }
 
         body.massData = mass
