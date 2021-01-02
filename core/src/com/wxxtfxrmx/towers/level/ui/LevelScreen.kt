@@ -10,7 +10,9 @@ import com.badlogic.gdx.physics.box2d.World
 import com.wxxtfxrmx.towers.common.*
 import com.wxxtfxrmx.towers.common.shader.ShapeRendererFactory
 import com.wxxtfxrmx.towers.level.component.BodyComponent
+import com.wxxtfxrmx.towers.level.component.SortingLayerComponent
 import com.wxxtfxrmx.towers.level.component.TextureComponent
+import com.wxxtfxrmx.towers.level.model.SortingLayer
 import com.wxxtfxrmx.towers.level.model.TowersTexture
 import com.wxxtfxrmx.towers.level.system.rendering.RenderingSystem
 
@@ -57,6 +59,10 @@ class LevelScreen(
             texture = fenceTexture
         }
 
+        val sortingLayerComponent: SortingLayerComponent = engine.component {
+            layer = SortingLayer.MIDDLE
+        }
+
         val polygon = PolygonShape().apply {
             setAsBox(fenceTexture.regionWidth.toFloat(), fenceTexture.regionHeight.toFloat())
         }
@@ -76,7 +82,7 @@ class LevelScreen(
                 this.body = body
             }
 
-            entity.addComponents(bodyComponent, textureComponent)
+            entity.addComponents(bodyComponent, textureComponent, sortingLayerComponent)
             fences.add(entity)
         }
 
@@ -90,6 +96,10 @@ class LevelScreen(
 
         val textureComponent: TextureComponent = engine.component {
             texture = groundTexture
+        }
+
+        val sortingLayerComponent: SortingLayerComponent = engine.component {
+            layer = SortingLayer.MIDDLE
         }
 
         val polygon = PolygonShape().apply {
@@ -111,7 +121,7 @@ class LevelScreen(
                 this.body = body
             }
 
-            entity.addComponents(bodyComponent, textureComponent)
+            entity.addComponents(bodyComponent, textureComponent, sortingLayerComponent)
             ground.add(entity)
         }
 
@@ -120,6 +130,10 @@ class LevelScreen(
     }
 
     private fun signsEntities(): List<Entity> {
+        val sortingLayerComponent: SortingLayerComponent = engine.component {
+            layer = SortingLayer.MIDDLE
+        }
+
         val alertTexture = textureAtlas.region(TowersTexture.ALERT_SIGN)
 
         val alertTextureComponent: TextureComponent = engine.component {
@@ -145,7 +159,7 @@ class LevelScreen(
 
         val alertEntity = engine.createEntity()
 
-        alertEntity.addComponents(alertTextureComponent, alertBodyComponent)
+        alertEntity.addComponents(alertTextureComponent, alertBodyComponent, sortingLayerComponent)
 
 
         val keepOutSignTexture = textureAtlas.region(TowersTexture.KEEP_OUT_SIGN)
@@ -172,7 +186,7 @@ class LevelScreen(
 
         val keepOutEntity = engine.createEntity()
 
-        keepOutEntity.addComponents(keepOutSignTextureComponent, keepOutSignBodyComponent)
+        keepOutEntity.addComponents(keepOutSignTextureComponent, keepOutSignBodyComponent, sortingLayerComponent)
 
         return listOf(alertEntity, keepOutEntity)
     }

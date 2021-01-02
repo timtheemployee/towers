@@ -8,18 +8,22 @@ import com.badlogic.gdx.utils.Array
 import com.wxxtfxrmx.towers.common.Body2DBoundsCalculator
 import com.wxxtfxrmx.towers.common.component
 import com.wxxtfxrmx.towers.level.component.BodyComponent
+import com.wxxtfxrmx.towers.level.component.SortingLayerComponent
 import com.wxxtfxrmx.towers.level.component.TextureComponent
 
 class RenderingSystem(
         private val batch: SpriteBatch,
 ) : IteratingSystem(
-        Family.all(BodyComponent::class.java).one(TextureComponent::class.java).get()
+        Family.all(BodyComponent::class.java, SortingLayerComponent::class.java).one(TextureComponent::class.java).get()
 ) {
     private val bodyBoundsCalculator = Body2DBoundsCalculator()
     private val renderQueue = Array<Entity>()
 
     override fun update(deltaTime: Float) {
         super.update(deltaTime)
+
+        renderQueue.sortedBy { it.component<SortingLayerComponent>().layer }
+
         renderQueue.forEach { entity ->
             val bodyComponent: BodyComponent = entity.component()
             val body = bodyComponent.body
