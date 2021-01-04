@@ -2,10 +2,8 @@ package com.wxxtfxrmx.towers.common
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Screen
-import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.Scaling
@@ -14,12 +12,12 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport
 abstract class BaseScreen() : Screen {
 
     protected val camera = OrthographicCamera(
-        UiConstants.WIDTH, UiConstants.HEIGHT
+        UiConstants.WIDTH_PPM_F, UiConstants.HEIGHT_PPM_F
     )
 
     private val viewport = ScalingViewport(
             Scaling.stretch,
-            UiConstants.WIDTH, UiConstants.HEIGHT,
+            UiConstants.WIDTH_PPM_F, UiConstants.HEIGHT_PPM_F,
             camera
     )
 

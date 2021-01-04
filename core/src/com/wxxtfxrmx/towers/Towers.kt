@@ -19,7 +19,7 @@ class Towers : Game() {
         shapeRenderer = ShapeRenderer()
         shapeFactory = ShapeRendererFactory(shapeRenderer)
         textureAtlas = TextureAtlas(Gdx.files.internal("atlas/towers.atlas"))
-        screen = LevelScreen(textureAtlas, shapeFactory)
+        screen = LevelScreen(textureAtlas)
     }
 
     override fun render() {

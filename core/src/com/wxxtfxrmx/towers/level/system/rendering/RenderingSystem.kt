@@ -9,41 +9,31 @@ import com.wxxtfxrmx.towers.common.Body2DBoundsCalculator
 import com.wxxtfxrmx.towers.common.component
 import com.wxxtfxrmx.towers.level.component.BodyComponent
 import com.wxxtfxrmx.towers.level.component.SortingLayerComponent
-import com.wxxtfxrmx.towers.level.component.TextureComponent
+import com.wxxtfxrmx.towers.level.component.SpriteComponent
 
 class RenderingSystem(
         private val batch: SpriteBatch,
 ) : IteratingSystem(
-        Family.all(BodyComponent::class.java, SortingLayerComponent::class.java).one(TextureComponent::class.java).get()
+        Family.all(BodyComponent::class.java).one(SpriteComponent::class.java).get()
 ) {
-    private val bodyBoundsCalculator = Body2DBoundsCalculator()
     private val renderQueue = Array<Entity>()
 
     override fun update(deltaTime: Float) {
         super.update(deltaTime)
 
-        renderQueue.sortedBy { it.component<SortingLayerComponent>().layer }
+//        renderQueue.sortedBy { it.component<SortingLayerComponent>().layer }
 
         renderQueue.forEach { entity ->
             val bodyComponent: BodyComponent = entity.component()
             val body = bodyComponent.body
             requireNotNull(body)
 
-            val textureComponent: TextureComponent = entity.component()
-            val texture = textureComponent.texture
-            requireNotNull(texture)
-
-            val (width, height) = bodyBoundsCalculator.getBounds(body)
+            val spriteComponent: SpriteComponent = entity.component()
+            val sprite = spriteComponent.sprite
+            requireNotNull(sprite)
 
             batch.begin()
-            batch.draw(
-                    texture,
-                    body.position.x, body.position.y,
-                    width * 0.5f, height * 0.5f,
-                    width, height,
-                    1f, 1f,
-                    body.angle
-            )
+            sprite.draw(batch)
             batch.end()
         }
 
