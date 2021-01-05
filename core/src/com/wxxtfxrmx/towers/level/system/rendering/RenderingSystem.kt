@@ -14,14 +14,14 @@ import com.wxxtfxrmx.towers.level.component.SpriteComponent
 class RenderingSystem(
         private val batch: SpriteBatch,
 ) : IteratingSystem(
-        Family.all(BodyComponent::class.java).one(SpriteComponent::class.java).get()
+        Family.all(BodyComponent::class.java, SortingLayerComponent::class.java).one(SpriteComponent::class.java).get()
 ) {
     private val renderQueue = Array<Entity>()
 
     override fun update(deltaTime: Float) {
         super.update(deltaTime)
 
-//        renderQueue.sortedBy { it.component<SortingLayerComponent>().layer }
+        renderQueue.sort(::byLayer)
 
         renderQueue.forEach { entity ->
             val bodyComponent: BodyComponent = entity.component()
@@ -39,6 +39,10 @@ class RenderingSystem(
 
         renderQueue.clear()
     }
+
+    private fun byLayer(first: Entity, second: Entity): Int =
+            second.component<SortingLayerComponent>().layer.layer -
+                    first.component<SortingLayerComponent>().layer.layer
 
     override fun processEntity(entity: Entity, deltaTime: Float) {
         renderQueue.add(entity)
