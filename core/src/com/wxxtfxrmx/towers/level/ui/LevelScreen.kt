@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d.*
-import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.badlogic.gdx.utils.viewport.StretchViewport
 import com.wxxtfxrmx.towers.common.*
 import com.wxxtfxrmx.towers.level.box2d.FloorContactListener
@@ -20,7 +19,8 @@ import com.wxxtfxrmx.towers.level.model.SortingLayer
 import com.wxxtfxrmx.towers.level.model.TowersTexture
 import com.wxxtfxrmx.towers.level.system.EmitFloorSystem
 import com.wxxtfxrmx.towers.level.system.UpdateSpritePositionSystem
-import com.wxxtfxrmx.towers.level.system.camera.CameraTranslateSystem
+import com.wxxtfxrmx.towers.level.system.camera.UpdateCameraPositionSystem
+import com.wxxtfxrmx.towers.level.system.camera.UpdateViewportSizeSystem
 import com.wxxtfxrmx.towers.level.system.rendering.RenderingSystem
 
 class LevelScreen(
@@ -41,7 +41,8 @@ class LevelScreen(
     private val renderingSystem = RenderingSystem(batch)
     private val updateSpritePositionSystem = UpdateSpritePositionSystem()
     private val emitFloorSystem = EmitFloorSystem(engine, world, textureAtlas, viewport)
-    private val cameraTranslateSystem = CameraTranslateSystem(camera)
+    private val updateViewportSizeSystem = UpdateViewportSizeSystem(engine, viewport)
+    private val updateCameraPositionSystem = UpdateCameraPositionSystem(camera, viewport)
 
     init {
         engine.addEntity(foundationEntity())
@@ -50,12 +51,13 @@ class LevelScreen(
         engine.addEntity(keepOutSignEntity())
         engine.addEntity(alertEntity())
 
+        engine.addSystem(updateViewportSizeSystem)
+        engine.addSystem(updateCameraPositionSystem)
         engine.addSystem(updateSpritePositionSystem)
         engine.addSystem(renderingSystem)
         engine.addSystem(emitFloorSystem)
-        engine.addSystem(cameraTranslateSystem)
 
-        world.setContactListener(FloorContactListener(engine, viewport))
+        world.setContactListener(FloorContactListener(engine))
     }
 
     private fun foundationEntity(): Entity {
@@ -259,13 +261,14 @@ class LevelScreen(
 
     override fun render(delta: Float) {
         super.render(delta)
+        val newDelta = if (delta > 0.1f) 0.1f else delta
         camera.update()
 
         batch.projectionMatrix = camera.combined
-        engine.update(delta)
+        engine.update(newDelta)
 
-        world.step(delta, 8, 8)
-        b2dDebugRenderer.render(world, camera.combined)
+        world.step(newDelta, 8, 8)
+        //b2dDebugRenderer.render(world, camera.combined)
     }
 
     override fun pause() {

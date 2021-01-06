@@ -5,16 +5,13 @@ import com.badlogic.gdx.physics.box2d.Contact
 import com.badlogic.gdx.physics.box2d.ContactImpulse
 import com.badlogic.gdx.physics.box2d.ContactListener
 import com.badlogic.gdx.physics.box2d.Manifold
-import com.badlogic.gdx.utils.viewport.Viewport
 import com.wxxtfxrmx.towers.common.Body2DBoundsCalculator
-import com.wxxtfxrmx.towers.level.component.EmitFloorComponent
-import com.wxxtfxrmx.towers.common.UiConstants
 import com.wxxtfxrmx.towers.common.component
-import com.wxxtfxrmx.towers.level.component.CameraDestinationComponent
+import com.wxxtfxrmx.towers.level.component.EmitFloorComponent
+import com.wxxtfxrmx.towers.level.component.UpdateViewportSizeComponent
 
 class FloorContactListener(
         private val engine: PooledEngine,
-        private val viewport: Viewport,
 ) : ContactListener {
 
     private val sizeCalculator = Body2DBoundsCalculator()
@@ -34,15 +31,12 @@ class FloorContactListener(
 
         val (_, height) = sizeCalculator.getBounds(topBody)
 
-        viewport.worldHeight += height * 1.5f + 1
+        val updateViewportSizeComponent: UpdateViewportSizeComponent = engine.component()
+        updateViewportSizeComponent.height = height
 
-        if (topBody.position.y >= UiConstants.HEIGHT_F * 0.2f) {
-            val entity = engine.createEntity()
-            val destinationComponent: CameraDestinationComponent = engine.component()
-            destinationComponent.destination.set(viewport.worldWidth * 0.5f, viewport.worldHeight - UiConstants.HEIGHT_F * 0.8f, 0f)
-            entity.add(destinationComponent)
-            engine.addEntity(entity)
-        }
+        val updateViewportEntity = engine.createEntity()
+        updateViewportEntity.add(updateViewportSizeComponent)
+        engine.addEntity(updateViewportEntity)
     }
 
     override fun endContact(contact: Contact) = Unit
