@@ -6,9 +6,7 @@ import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.utils.Array
-import com.wxxtfxrmx.towers.common.Body2DBoundsCalculator
 import com.wxxtfxrmx.towers.common.component
-import com.wxxtfxrmx.towers.common.getBounds
 import com.wxxtfxrmx.towers.level.component.BodyComponent
 import com.wxxtfxrmx.towers.level.component.SortingLayerComponent
 import com.wxxtfxrmx.towers.level.component.SpriteComponent

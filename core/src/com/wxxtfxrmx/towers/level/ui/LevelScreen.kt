@@ -36,6 +36,8 @@ class LevelScreen(
     private val b2dDebugRenderer = Box2DDebugRenderer(true, true, true, true, true, true)
     private val world = World(Vector2(0f, -9.8f), true)
     private val engine = PooledEngine()
+    private val entityBuilder = EntityBuilder(engine)
+    private val bodyBuilder = BodyBuilder(world)
 
     private val batch = SpriteBatch()
     private val renderingSystem = RenderingSystem(camera, batch)
@@ -63,44 +65,37 @@ class LevelScreen(
     private fun foundationEntity(): Entity {
         val foundationTexture = textureAtlas.region(TowersTexture.FOUNDATION)
 
-        val body = BodyDef().apply {
-            position.set(UiConstants.WIDTH_F * 0.5f, UiConstants.HEIGHT_F - foundationTexture.heightInMeters)
-            fixedRotation = true
-            type = BodyDef.BodyType.DynamicBody
-        }.let(world::createBody)
+        val body = bodyBuilder
+                .begin()
+                .define {
+                    position.set(UiConstants.WIDTH_F * 0.5f, UiConstants.HEIGHT_F - foundationTexture.heightInMeters)
+                    fixedRotation = true
+                    type = BodyDef.BodyType.DynamicBody
+                }
+                .after()
+                .fixture(PolygonShape::class, 1f) {
+                    setAsBox(foundationTexture.halfWidthInMeters, foundationTexture.halfHeightInMeters)
+                }
+                .mass {
+                    mass = 100f
+                }
+                .build()
 
-        val mass = MassData().apply {
-            mass = 100f
-            center.set(0f, body.position.y)
-        }
-
-        body.massData = mass
-
-        val polygonShape = PolygonShape().apply {
-            setAsBox(foundationTexture.halfWidthInMeters, foundationTexture.halfHeightInMeters)
-        }
-
-        body.createFixture(polygonShape, 1f)
-
-        val bodyComponent: BodyComponent = engine.component {
-            this.body = body
-        }
-
-        val sortingLayerComponent: SortingLayerComponent = engine.component {
-            layer = SortingLayer.FRONT
-        }
-
-        val spriteComponent: SpriteComponent = engine.component {
-            this.sprite = Sprite(foundationTexture).apply {
-                setSize(foundationTexture.widthInMeters, foundationTexture.heightInMeters)
-                setPosition(body.position.x - halfWidthInMeters, body.position.y - halfHeightInMeters)
-            }
-        }
-
-        val entity = engine.createEntity()
-        entity.addComponents(bodyComponent, spriteComponent, sortingLayerComponent)
-
-        return entity
+        return entityBuilder
+                .begin()
+                .component(BodyComponent::class) {
+                    this.body = body
+                }
+                .component(SortingLayerComponent::class) {
+                    layer = SortingLayer.FRONT
+                }
+                .component(SpriteComponent::class) {
+                    sprite = Sprite(foundationTexture).apply {
+                        setSize(foundationTexture.widthInMeters, foundationTexture.heightInMeters)
+                        setPosition(body.position.x - halfWidthInMeters, body.position.y - halfHeightInMeters)
+                    }
+                }
+                .build()
     }
 
     private fun fenceEntities(): Entity {
