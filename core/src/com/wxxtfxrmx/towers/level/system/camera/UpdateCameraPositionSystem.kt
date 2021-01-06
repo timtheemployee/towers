@@ -31,15 +31,5 @@ class UpdateCameraPositionSystem(
             targetPosition.set(camera.position)
             targetPosition.y += viewport.worldHeight - cameraTopPosition + VERTICAL_OFFSET
         }
-
-//        if (cameraTopPosition < viewport.worldHeight) {
-//            alpha += deltaTime * 1
-//            val targetPosition = camera.position.cpy()
-//            targetPosition.set(targetPosition.x, targetPosition.y + camera.viewportHeight * 1.5f, 0f)
-//            camera.position.lerp(targetPosition, alpha)
-//            camera.update()
-//
-//            if (alpha > 1f) alpha = 0f
-//        }
     }
 }

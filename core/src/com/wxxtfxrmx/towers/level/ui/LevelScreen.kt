@@ -38,7 +38,7 @@ class LevelScreen(
     private val engine = PooledEngine()
 
     private val batch = SpriteBatch()
-    private val renderingSystem = RenderingSystem(batch)
+    private val renderingSystem = RenderingSystem(camera, batch)
     private val updateSpritePositionSystem = UpdateSpritePositionSystem()
     private val emitFloorSystem = EmitFloorSystem(engine, world, textureAtlas, viewport)
     private val updateViewportSizeSystem = UpdateViewportSizeSystem(engine, viewport)
@@ -268,7 +268,7 @@ class LevelScreen(
         engine.update(newDelta)
 
         world.step(newDelta, 8, 8)
-        //b2dDebugRenderer.render(world, camera.combined)
+        b2dDebugRenderer.render(world, camera.combined)
     }
 
     override fun pause() {
@@ -278,11 +278,16 @@ class LevelScreen(
 
     override fun resume() {
         super.resume()
-
         engine.systems.forEach { it.setProcessing(true) }
     }
 
     override fun resize(width: Int, height: Int) {
         viewport.update(width, height)
+    }
+
+    override fun dispose() {
+        super.dispose()
+        world.dispose()
+        b2dDebugRenderer.dispose()
     }
 }
