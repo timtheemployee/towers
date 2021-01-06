@@ -11,6 +11,13 @@ alert
   orig: 64, 64
   offset: 0, 0
   index: -1
+crane
+  rotate: false
+  xy: 104, 2
+  size: 32, 64
+  orig: 32, 64
+  offset: 0, 0
+  index: -1
 fence
   rotate: false
   xy: 2, 86

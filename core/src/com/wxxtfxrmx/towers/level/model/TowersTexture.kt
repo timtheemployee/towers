@@ -7,5 +7,6 @@ enum class TowersTexture(val regionName: String) {
     GROUND("ground"),
 
     FOUNDATION("foundation"),
-    FLOOR_V1("floor-1")
+    FLOOR_V1("floor-1"),
+    CRANE("crane")
 }
