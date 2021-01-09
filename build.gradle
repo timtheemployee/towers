@@ -60,7 +60,6 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86_64"
-        api "com.badlogicgames.ashley:ashley:$ashleyVersion"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     }
 }
@@ -84,11 +83,9 @@ project(":ios") {
 project(":core") {
     apply plugin: "kotlin"
 
-
     dependencies {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        api "com.badlogicgames.ashley:ashley:$ashleyVersion"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     }
 }
