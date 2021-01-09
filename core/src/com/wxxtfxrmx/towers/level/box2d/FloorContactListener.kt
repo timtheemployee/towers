@@ -1,42 +1,19 @@
 package com.wxxtfxrmx.towers.level.box2d
 
-import com.badlogic.ashley.core.PooledEngine
-import com.badlogic.gdx.physics.box2d.Contact
-import com.badlogic.gdx.physics.box2d.ContactImpulse
-import com.badlogic.gdx.physics.box2d.ContactListener
-import com.badlogic.gdx.physics.box2d.Manifold
-import com.wxxtfxrmx.towers.common.Body2DBoundsCalculator
-import com.wxxtfxrmx.towers.common.component
-import com.wxxtfxrmx.towers.level.component.EmitFloorComponent
-import com.wxxtfxrmx.towers.level.component.UpdateViewportSizeComponent
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.physics.box2d.*
 
-class FloorContactListener(
-        private val engine: PooledEngine,
-) : ContactListener {
+class FloorContactListener : ContactListener {
 
-    private val sizeCalculator = Body2DBoundsCalculator()
+    private var listener: ((Body, Body) -> Unit)? = null
+
+    fun setOnContactBeginListener(listener: (Body, Body) -> Unit) {
+        this.listener = listener
+    }
 
     override fun beginContact(contact: Contact) {
-        val emitEntity = engine.createEntity()
-        val emitFloorComponent: EmitFloorComponent = engine.component()
-
-        emitEntity.add(emitFloorComponent)
-
-        engine.addEntity(emitEntity)
-
-        val bottomBody = contact.fixtureB.body
-        bottomBody.isAwake = false
-
-        val topBody = contact.fixtureA.body
-
-        val (_, height) = sizeCalculator.getBounds(topBody)
-
-        val updateViewportSizeComponent: UpdateViewportSizeComponent = engine.component()
-        updateViewportSizeComponent.height = height
-
-        val updateViewportEntity = engine.createEntity()
-        updateViewportEntity.add(updateViewportSizeComponent)
-        engine.addEntity(updateViewportEntity)
+        Gdx.app.log(this::class.simpleName, "Contact begin")
+        listener?.invoke(contact.fixtureA.body, contact.fixtureB.body)
     }
 
     override fun endContact(contact: Contact) = Unit

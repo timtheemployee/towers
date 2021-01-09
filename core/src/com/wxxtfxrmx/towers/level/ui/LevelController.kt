@@ -2,15 +2,18 @@ package com.wxxtfxrmx.towers.level.ui
 
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.physics.box2d.Body
 import com.badlogic.gdx.physics.box2d.BodyDef
 import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.World
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.wxxtfxrmx.towers.common.*
+import com.wxxtfxrmx.towers.level.box2d.FloorContactListener
 import com.wxxtfxrmx.towers.level.model.Block
 import com.wxxtfxrmx.towers.level.model.Environment
 import com.wxxtfxrmx.towers.level.model.Model
 import com.wxxtfxrmx.towers.level.model.TowersTexture
+import com.wxxtfxrmx.towers.level.ui.camera.CameraUpdater
 
 class LevelController(
         world: World,
@@ -18,37 +21,45 @@ class LevelController(
         private val viewport: Viewport,
 ) {
 
+    private val bodyBuilder = BodyBuilder(world)
+    private val boundsCalculator = Body2DBoundsCalculator()
+    private val cameraUpdater = CameraUpdater(viewport)
+
+    private val bodyCollisionCallbacks = mutableListOf<Runnable>()
     private val models = mutableListOf<Model>()
     val renderQueue = mutableListOf<Model>()
-    private val bodyBuilder = BodyBuilder(world)
+    private var isWorldEnabled = true
 
     init {
-        models.add(foundationEntity())
+        val floorContactListener = FloorContactListener()
+        floorContactListener.setOnContactBeginListener(::onBodiesCollide)
+        world.setContactListener(floorContactListener)
+        models.add(foundationEntity(TowersTexture.FOUNDATION))
         models.add(groundEntities())
         models.add(fenceEntities())
         models.add(keepOutSignEntity())
         models.add(alertEntity())
     }
 
-    private fun foundationEntity(): Model {
-        val foundationTexture = textureAtlas.region(TowersTexture.FOUNDATION)
+    private fun foundationEntity(texture: TowersTexture): Model {
+        val towerTexture = textureAtlas.region(texture)
 
         val body = bodyBuilder
                 .begin()
                 .body {
-                    position.set(UiConstants.WIDTH_F * 0.5f, UiConstants.HEIGHT_F - foundationTexture.heightInMeters)
+                    position.set(viewport.worldWidth * 0.5f, viewport.worldHeight - towerTexture.heightInMeters)
                     fixedRotation = true
                     type = BodyDef.BodyType.DynamicBody
                 }
                 .fixture {
                     density = 1.0f
                     shape = PolygonShape().apply {
-                        setAsBox(foundationTexture.halfWidthInMeters, foundationTexture.halfHeightInMeters)
+                        setAsBox(towerTexture.halfWidthInMeters, towerTexture.halfHeightInMeters)
                     }
                 }
                 .build()
 
-        val sprite = Sprite(foundationTexture).apply {
+        val sprite = Sprite(towerTexture).apply {
             setSize(widthInMeters, heightInMeters)
             setPosition(body.position.x - halfWidthInMeters, body.position.y - halfWidthInMeters)
         }
@@ -169,16 +180,23 @@ class LevelController(
     }
 
     fun onPreRender() {
+        bodyCollisionCallbacks.forEach { it.run() }
+        bodyCollisionCallbacks.clear()
+
         models.forEach(::updateModelPosition)
 
         models
                 .filter(::isInCameraBounds)
                 .sortedWith { left, right -> right.order.layer - left.order.layer }
                 .let(renderQueue::addAll)
+
+        isWorldEnabled = false
     }
 
-    fun onPostRender() {
+    fun onPostRender(delta: Float) {
+        cameraUpdater.update(delta)
         renderQueue.clear()
+        isWorldEnabled = true
     }
 
     private fun updateModelPosition(model: Model): Model {
@@ -199,5 +217,16 @@ class LevelController(
         val spriteTop = sprite.y + sprite.height
 
         return spriteBottom < topBound || spriteTop > bottomBound
+    }
+
+    private fun onBodiesCollide(top: Body, bottom: Body) {
+        bottom.isAwake = false
+
+        bodyCollisionCallbacks.add {
+            val (_, height) = boundsCalculator.getBounds(top)
+            viewport.worldHeight += 1.5f * height + 1
+
+            models.add(foundationEntity(TowersTexture.FLOOR_V1))
+        }
     }
 }

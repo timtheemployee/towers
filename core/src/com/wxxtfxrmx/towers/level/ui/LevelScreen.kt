@@ -26,7 +26,6 @@ class LevelScreen(
     private val batch = SpriteBatch()
     private val controller = LevelController(world, textureAtlas, viewport)
 
-
     override fun render(delta: Float) {
         super.render(delta)
         val newDelta = if (delta > 0.1f) 0.1f else delta
@@ -43,7 +42,7 @@ class LevelScreen(
             it.sprite.draw(batch)
         }
         batch.end()
-        controller.onPostRender()
+        controller.onPostRender(newDelta)
     }
 
     override fun resize(width: Int, height: Int) {
