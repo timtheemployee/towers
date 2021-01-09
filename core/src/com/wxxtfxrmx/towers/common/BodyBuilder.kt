@@ -1,51 +1,35 @@
 package com.wxxtfxrmx.towers.common
 
-import com.badlogic.gdx.physics.box2d.*
-import kotlin.reflect.KClass
+import com.badlogic.gdx.physics.box2d.Body
+import com.badlogic.gdx.physics.box2d.BodyDef
+import com.badlogic.gdx.physics.box2d.FixtureDef
+import com.badlogic.gdx.physics.box2d.World
 
 class BodyBuilder(private val world: World) {
 
     private lateinit var bodyDef: BodyDef
-    private lateinit var body: Body
+    private lateinit var fixtureDef: FixtureDef
 
     fun begin(): BodyBuilder {
         bodyDef = BodyDef()
+        fixtureDef = FixtureDef()
         return this
     }
 
-    fun define(block: BodyDef.() -> Unit): BodyBuilder {
+    fun body(block: BodyDef.() -> Unit): BodyBuilder {
         block(bodyDef)
         return this
     }
 
-    fun after(): BodyBuilder {
-        body = world.createBody(bodyDef)
+    fun fixture(block: FixtureDef.() -> Unit): BodyBuilder {
+        block(fixtureDef)
         return this
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T : Shape> fixture(shapeClass: KClass<T>, density: Float, block: T.() -> Unit): BodyBuilder {
-        val shape = when (shapeClass) {
-            PolygonShape::class -> PolygonShape()
-            CircleShape::class -> CircleShape()
-            EdgeShape::class -> EdgeShape()
-            ChainShape::class -> ChainShape()
-            else -> throw IllegalArgumentException("Not supported fixture with shape $shapeClass")
-        }
+    fun build(): Body {
+        val body = world.createBody(bodyDef)
+        body.createFixture(fixtureDef)
 
-        block(shape as T)
-
-        body.createFixture(shape, density)
-        return this
+        return body
     }
-
-    fun mass(block: MassData.() -> Unit): BodyBuilder {
-        val massData = MassData()
-        block(massData)
-        body.massData = massData
-        return this
-    }
-
-    fun build(): Body =
-            body
 }

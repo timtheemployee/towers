@@ -13,11 +13,12 @@ import com.wxxtfxrmx.towers.level.component.BodyComponent
 import com.wxxtfxrmx.towers.level.component.EmitFloorComponent
 import com.wxxtfxrmx.towers.level.component.SortingLayerComponent
 import com.wxxtfxrmx.towers.level.component.SpriteComponent
+import com.wxxtfxrmx.towers.level.model.Block
+import com.wxxtfxrmx.towers.level.model.Model
 import com.wxxtfxrmx.towers.level.model.SortingLayer
 import com.wxxtfxrmx.towers.level.model.TowersTexture
 
 class EmitFloorSystem(
-        private val entityBuilder: EntityBuilder,
         private val bodyBuilder: BodyBuilder,
         private val textureAtlas: TextureAtlas,
         private val viewport: Viewport
@@ -32,33 +33,24 @@ class EmitFloorSystem(
 
         val body = bodyBuilder
                 .begin()
-                .define {
+                .body {
                     position.set(viewport.worldWidth * 0.5f, viewport.worldHeight - floorTexture.heightInMeters)
                     fixedRotation = true
                     type = BodyDef.BodyType.DynamicBody
                 }
-                .after()
-                .fixture(PolygonShape::class, 1f) {
-                    setAsBox(floorTexture.halfWidthInMeters, floorTexture.halfHeightInMeters)
-                }
-                .build()
-
-        val floorEntity = entityBuilder
-                .begin()
-                .component(BodyComponent::class) {
-                    this.body = body
-                }
-                .component(SortingLayerComponent::class) {
-                    layer = SortingLayer.FRONT
-                }
-                .component(SpriteComponent::class) {
-                    sprite = Sprite(floorTexture).apply {
-                        setSize(floorTexture.widthInMeters, floorTexture.heightInMeters)
-                        setPosition(body.position.x - halfWidthInMeters, body.position.y - halfHeightInMeters)
+                .fixture {
+                    density = 1f
+                    shape = PolygonShape().apply {
+                        setAsBox(floorTexture.halfWidthInMeters, floorTexture.halfHeightInMeters)
                     }
                 }
                 .build()
 
-        engine.addEntity(floorEntity)
+       val sprite = Sprite(floorTexture).apply {
+           setPosition(body.position.x - halfWidthInMeters, body.position.y - halfHeightInMeters)
+           setSize(widthInMeters, heightInMeters)
+       }
+
+        val model = Block(body, sprite)
     }
 }
