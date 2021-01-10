@@ -14,6 +14,12 @@ class LevelScreen(
         textureAtlas: TextureAtlas,
 ) : ScreenAdapter() {
 
+    private companion object {
+        const val WORLD_DELTA = 1 / 30f
+        const val POSITION_ITERATIONS = 3
+        const val VELOCITY_ITERATIONS = 8
+    }
+
     private val camera = OrthographicCamera(UiConstants.WIDTH_F, UiConstants.HEIGHT_F).apply {
         position.set(UiConstants.WIDTH_F * 0.5f, UiConstants.HEIGHT_F * 0.5f, 0f)
     }
@@ -33,7 +39,7 @@ class LevelScreen(
 
         batch.projectionMatrix = camera.combined
 
-        world.step(newDelta, 8, 8)
+        world.step(WORLD_DELTA, VELOCITY_ITERATIONS, POSITION_ITERATIONS)
         b2dDebugRenderer.render(world, camera.combined)
 
         controller.onPreRender()

@@ -16,7 +16,7 @@ import com.wxxtfxrmx.towers.level.model.TowersTexture
 import com.wxxtfxrmx.towers.level.ui.camera.CameraUpdater
 
 class LevelController(
-        world: World,
+        private val world: World,
         private val textureAtlas: TextureAtlas,
         private val viewport: Viewport,
 ) {
@@ -25,7 +25,8 @@ class LevelController(
     private val boundsCalculator = Body2DBoundsCalculator()
     private val cameraUpdater = CameraUpdater(viewport)
 
-    private val bodyCollisionCallbacks = mutableListOf<Runnable>()
+    private val bodyCollisionCallbacks = mutableListOf<() -> Unit>()
+    private val removedBodiesQueue = mutableListOf<Model>()
     private val models = mutableListOf<Model>()
     val renderQueue = mutableListOf<Model>()
     private var isWorldEnabled = true
@@ -180,13 +181,22 @@ class LevelController(
     }
 
     fun onPreRender() {
-        bodyCollisionCallbacks.forEach { it.run() }
+        models.filterTo(removedBodiesQueue, ::isUnderCameraBottom).forEach {
+            models.remove(it)
+            world.destroyBody(it.body)
+        }
+
+        removedBodiesQueue.clear()
+
+        models.sortBy { it.body.position.y }
+        models.first().body.type = BodyDef.BodyType.StaticBody
+
+        bodyCollisionCallbacks.forEach { it() }
         bodyCollisionCallbacks.clear()
 
         models.forEach(::updateModelPosition)
 
         models
-                .filter(::isInCameraBounds)
                 .sortedWith { left, right -> right.order.layer - left.order.layer }
                 .let(renderQueue::addAll)
 
@@ -207,16 +217,14 @@ class LevelController(
         return model
     }
 
-    private fun isInCameraBounds(model: Model): Boolean {
+    private fun isUnderCameraBottom(model: Model): Boolean {
         val camera = viewport.camera
         val bottomBound = camera.position.y - camera.viewportHeight * 0.5f
-        val topBound = camera.position.y + camera.viewportHeight * 0.5f
 
         val sprite = model.sprite
-        val spriteBottom = sprite.y
         val spriteTop = sprite.y + sprite.height
 
-        return spriteBottom < topBound || spriteTop > bottomBound
+        return spriteTop < bottomBound
     }
 
     private fun onBodiesCollide(top: Body, bottom: Body) {
