@@ -25,11 +25,12 @@ class LevelController(
     private val boundsCalculator = Body2DBoundsCalculator()
     private val cameraUpdater = CameraUpdater(viewport)
 
-    private val bodyCollisionCallbacks = mutableListOf<() -> Unit>()
+    private var bodyCollisionCallback: (() -> Model)? = null
     private val removedBodiesQueue = mutableListOf<Model>()
     private val models = mutableListOf<Model>()
     val renderQueue = mutableListOf<Model>()
     private var isWorldEnabled = true
+    private var suspendedModel: Model? = null
 
     init {
         val floorContactListener = FloorContactListener()
@@ -42,7 +43,7 @@ class LevelController(
         models.add(alertEntity())
     }
 
-    private fun foundationEntity(texture: TowersTexture): Model {
+    private fun foundationEntity(texture: TowersTexture, isAwake: Boolean = true): Model {
         val towerTexture = textureAtlas.region(texture)
 
         val body = bodyBuilder
@@ -51,6 +52,7 @@ class LevelController(
                     position.set(viewport.worldWidth * 0.5f, viewport.worldHeight - towerTexture.heightInMeters)
                     fixedRotation = true
                     type = BodyDef.BodyType.DynamicBody
+                    awake = isAwake
                 }
                 .fixture {
                     density = 1.0f
@@ -181,6 +183,12 @@ class LevelController(
     }
 
     fun onPreRender() {
+        if (bodyCollisionCallback != null) {
+            suspendedModel = bodyCollisionCallback?.invoke()
+            bodyCollisionCallback = null
+            suspendedModel?.let(models::add)
+        }
+
         models.filterTo(removedBodiesQueue, ::isUnderCameraBottom).forEach {
             models.remove(it)
             world.destroyBody(it.body)
@@ -190,9 +198,6 @@ class LevelController(
 
         models.sortBy { it.body.position.y }
         models.first().body.type = BodyDef.BodyType.StaticBody
-
-        bodyCollisionCallbacks.forEach { it() }
-        bodyCollisionCallbacks.clear()
 
         models.forEach(::updateModelPosition)
 
@@ -230,11 +235,16 @@ class LevelController(
     private fun onBodiesCollide(top: Body, bottom: Body) {
         bottom.isAwake = false
 
-        bodyCollisionCallbacks.add {
+        bodyCollisionCallback = {
             val (_, height) = boundsCalculator.getBounds(top)
             viewport.worldHeight += 1.5f * height + 1
 
-            models.add(foundationEntity(TowersTexture.FLOOR_V1))
+            foundationEntity(TowersTexture.FLOOR_V1, isAwake = false)
         }
+    }
+
+    fun onTouched() {
+        suspendedModel?.body?.isAwake = true
+        suspendedModel = null
     }
 }

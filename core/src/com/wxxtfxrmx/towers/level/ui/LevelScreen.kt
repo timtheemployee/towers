@@ -1,5 +1,6 @@
 package com.wxxtfxrmx.towers.level.ui
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -49,6 +50,10 @@ class LevelScreen(
         }
         batch.end()
         controller.onPostRender(newDelta)
+
+        if (Gdx.input.isTouched) {
+            controller.onTouched()
+        }
     }
 
     override fun resize(width: Int, height: Int) {
