@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.World
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.wxxtfxrmx.towers.common.*
 import com.wxxtfxrmx.towers.level.box2d.FloorContactListener
+import com.wxxtfxrmx.towers.level.box2d.PendulumSimulation
 import com.wxxtfxrmx.towers.level.model.Block
 import com.wxxtfxrmx.towers.level.model.Environment
 import com.wxxtfxrmx.towers.level.model.Model
@@ -26,11 +27,15 @@ class LevelController(
     private val cameraUpdater = CameraUpdater(viewport)
 
     private var bodyCollisionCallback: (() -> Model)? = null
+    private var suspendedModel: Model? = null
+
+    private val pendulumSimulation = PendulumSimulation(viewport)
+
     private val removedBodiesQueue = mutableListOf<Model>()
     private val models = mutableListOf<Model>()
     val renderQueue = mutableListOf<Model>()
+
     private var isWorldEnabled = true
-    private var suspendedModel: Model? = null
 
     init {
         val floorContactListener = FloorContactListener()
@@ -182,12 +187,14 @@ class LevelController(
         return Environment(body, sprite)
     }
 
-    fun onPreRender() {
+    fun onPreRender(delta: Float) {
         if (bodyCollisionCallback != null) {
             suspendedModel = bodyCollisionCallback?.invoke()
             bodyCollisionCallback = null
             suspendedModel?.let(models::add)
         }
+
+        pendulumSimulation.update(delta)
 
         models.filterTo(removedBodiesQueue, ::isUnderCameraBottom).forEach {
             models.remove(it)
@@ -239,12 +246,16 @@ class LevelController(
             val (_, height) = boundsCalculator.getBounds(top)
             viewport.worldHeight += 1.5f * height + 1
 
-            foundationEntity(TowersTexture.FLOOR_V1, isAwake = false)
+            foundationEntity(TowersTexture.FLOOR_V1).also {
+                it.body.isAwake = false
+                pendulumSimulation.model = it
+            }
         }
     }
 
     fun onTouched() {
         suspendedModel?.body?.isAwake = true
         suspendedModel = null
+        pendulumSimulation.model = null
     }
 }

@@ -41,9 +41,9 @@ class LevelScreen(
         batch.projectionMatrix = camera.combined
 
         world.step(WORLD_DELTA, VELOCITY_ITERATIONS, POSITION_ITERATIONS)
-        b2dDebugRenderer.render(world, camera.combined)
+        //b2dDebugRenderer.render(world, camera.combined)
 
-        controller.onPreRender()
+        controller.onPreRender(newDelta)
         batch.begin()
         controller.renderQueue.forEach {
             it.sprite.draw(batch)
