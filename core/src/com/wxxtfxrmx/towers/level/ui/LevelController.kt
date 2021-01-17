@@ -6,15 +6,15 @@ import com.badlogic.gdx.physics.box2d.Body
 import com.badlogic.gdx.physics.box2d.BodyDef
 import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.World
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.wxxtfxrmx.towers.common.*
 import com.wxxtfxrmx.towers.level.box2d.FloorContactListener
 import com.wxxtfxrmx.towers.level.box2d.PendulumSimulation
-import com.wxxtfxrmx.towers.level.model.Block
-import com.wxxtfxrmx.towers.level.model.Environment
-import com.wxxtfxrmx.towers.level.model.Model
-import com.wxxtfxrmx.towers.level.model.TowersTexture
+import com.wxxtfxrmx.towers.level.model.*
 import com.wxxtfxrmx.towers.level.ui.camera.CameraUpdater
+import kotlin.experimental.or
 
 class LevelController(
         private val world: World,
@@ -24,12 +24,11 @@ class LevelController(
 
     private val bodyBuilder = BodyBuilder(world)
     private val boundsCalculator = Body2DBoundsCalculator()
-    private val cameraUpdater = CameraUpdater(viewport)
 
     private var bodyCollisionCallback: (() -> Model)? = null
     private var suspendedModel: Model? = null
 
-    private val pendulumSimulation = PendulumSimulation(viewport)
+    private val pendulumSimulation: PendulumSimulation
 
     private val removedBodiesQueue = mutableListOf<Model>()
     private val models = mutableListOf<Model>()
@@ -37,15 +36,56 @@ class LevelController(
 
     private var isWorldEnabled = true
 
+    private val craneModel: Model
+    private val cameraUpdater: CameraUpdater
+
     init {
         val floorContactListener = FloorContactListener()
         floorContactListener.setOnContactBeginListener(::onBodiesCollide)
         world.setContactListener(floorContactListener)
-        models.add(foundationEntity(TowersTexture.FOUNDATION))
+        val foundationEntity = foundationEntity(TowersTexture.FOUNDATION, isAwake = false)
+        models.add(foundationEntity)
         models.add(groundEntities())
         models.add(fenceEntities())
         models.add(keepOutSignEntity())
         models.add(alertEntity())
+
+        craneModel = craneModel()
+        pendulumSimulation = PendulumSimulation(viewport, craneModel)
+        pendulumSimulation.model = foundationEntity
+        suspendedModel = foundationEntity
+        models.add(craneModel)
+
+        cameraUpdater = CameraUpdater(viewport, craneModel)
+    }
+
+    private fun craneModel(): Model {
+        val craneTexture = textureAtlas.region(TowersTexture.CRANE)
+
+        val body = bodyBuilder
+                .begin()
+                .body {
+                    position.set(viewport.worldWidth * 0.5f, viewport.worldHeight - craneTexture.halfHeightInMeters)
+                    fixedRotation = true
+                    type = BodyDef.BodyType.StaticBody
+                    awake = false
+                }
+                .fixture {
+                    filter.categoryBits = CollisionFilter.ENVIRONMENT.code
+                    filter.maskBits = CollisionFilter.ENVIRONMENT.code
+                    density = 1f
+                    shape = PolygonShape().apply {
+                        setAsBox(craneTexture.halfWidthInMeters, craneTexture.halfHeightInMeters)
+                    }
+                }
+                .build()
+
+        val sprite = Sprite(craneTexture).apply {
+            setSize(widthInMeters, heightInMeters)
+            setPosition(body.position.x - halfWidthInMeters, body.position.y - halfHeightInMeters)
+        }
+
+        return Environment(body, sprite)
     }
 
     private fun foundationEntity(texture: TowersTexture, isAwake: Boolean = true): Model {
@@ -60,6 +100,8 @@ class LevelController(
                     awake = isAwake
                 }
                 .fixture {
+                    filter.categoryBits = CollisionFilter.BLOCK.code
+                    filter.maskBits = CollisionFilter.BLOCK.code or CollisionFilter.GROUND.code
                     density = 1.0f
                     shape = PolygonShape().apply {
                         setAsBox(towerTexture.halfWidthInMeters, towerTexture.halfHeightInMeters)
@@ -88,6 +130,8 @@ class LevelController(
                     active = false
                 }
                 .fixture {
+                    filter.categoryBits = CollisionFilter.ENVIRONMENT.code
+                    filter.maskBits = CollisionFilter.BLOCK.code or CollisionFilter.GROUND.code
                     density = 0f
                     shape = PolygonShape().apply {
                         setAsBox(fenceTexture.halfWidthInMeters, fenceTexture.halfHeightInMeters)
@@ -115,6 +159,8 @@ class LevelController(
                     active = true
                 }
                 .fixture {
+                    filter.categoryBits = CollisionFilter.GROUND.code
+                    filter.maskBits = CollisionFilter.ENVIRONMENT.code or CollisionFilter.BLOCK.code
                     shape = PolygonShape().apply {
                         setAsBox(groundTexture.halfWidthInMeters, groundTexture.halfHeightInMeters)
                     }

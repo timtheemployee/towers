@@ -6,16 +6,16 @@ filter: Nearest,Nearest
 repeat: none
 alert
   rotate: false
-  xy: 784, 150
+  xy: 818, 150
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 crane
   rotate: false
-  xy: 104, 2
-  size: 32, 64
-  orig: 32, 64
+  xy: 784, 22
+  size: 32, 192
+  orig: 32, 192
   offset: 0, 0
   index: -1
 fence
