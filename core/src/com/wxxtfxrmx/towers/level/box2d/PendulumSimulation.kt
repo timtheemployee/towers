@@ -6,6 +6,7 @@ import com.wxxtfxrmx.towers.common.halfHeightInMeters
 import com.wxxtfxrmx.towers.common.heightInMeters
 import com.wxxtfxrmx.towers.common.topBoundY
 import com.wxxtfxrmx.towers.level.model.Model
+import kotlin.math.sin
 
 class PendulumSimulation(
         private val viewport: Viewport,
@@ -15,8 +16,12 @@ class PendulumSimulation(
     private val leftPosition = Vector2(1f, viewport.camera.topBoundY())
     private val rightPosition = Vector2(viewport.worldWidth - 1f, viewport.camera.topBoundY())
 
-    private var horizontalAlpha = 0f
-
+    private val position = Vector2()
+    private val velocity = Vector2()
+    private val movement = Vector2()
+    private val direction = Vector2()
+    private val blockPosition = Vector2()
+    
     private var simulateToLeftSide = true
     var model: Model? = null
         set(value) {
@@ -25,25 +30,27 @@ class PendulumSimulation(
         }
 
     fun update(delta: Float) {
+
         leftPosition.set(1f, viewport.camera.topBoundY())
         rightPosition.set(viewport.worldWidth - 1f, viewport.camera.topBoundY())
 
-        horizontalAlpha += delta * 0.5f
-
         val destination = if (simulateToLeftSide) leftPosition else rightPosition
 
-        val cranePosition = craneModel.body.position
-        val movedPosition = cranePosition.cpy().lerp(destination, horizontalAlpha)
-        craneModel.body.setTransform(movedPosition, craneModel.body.angle)
+        position.set(craneModel.body.position)
+        direction.set(destination).sub(position).nor()
+        velocity.set(direction).scl(10f)
+        movement.set(velocity).scl(delta)
+        position.add(movement)
 
-        movedPosition.set(movedPosition.x, movedPosition.y - craneModel.sprite.halfHeightInMeters)
-        model?.body?.setTransform(movedPosition, model?.body?.angle ?: 0f)
+        craneModel.body.setTransform(position, craneModel.body.angle)
 
-        val isLeftReached = craneModel.body.position.epsilonEquals(leftPosition)
-        val isRightReached = craneModel.body.position.epsilonEquals(rightPosition)
-        if (horizontalAlpha >= 1 || isLeftReached || isRightReached) {
+        blockPosition.set(position.x, position.y - craneModel.sprite.halfHeightInMeters)
+        model?.body?.setTransform(blockPosition, model?.body?.angle ?: 0f)
+
+        val isLeftReached = craneModel.body.position.x <= leftPosition.x
+        val isRightReached = craneModel.body.position.x >= rightPosition.x
+        if (isLeftReached || isRightReached) {
             simulateToLeftSide = !simulateToLeftSide
-            horizontalAlpha = 0f
         }
     }
 }
